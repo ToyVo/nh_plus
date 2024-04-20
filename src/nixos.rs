@@ -38,10 +38,6 @@ impl OsRebuildArgs {
             true
         };
 
-        // TODO: add a  .maybe_arg to CommandBuilder
-        // so that I can do .maybe_arg( Option<T> )
-        let sudo_args: &[_] = if use_sudo { &["sudo"] } else { &[] };
-
         let hostname = match &self.hostname {
             Some(h) => h.to_owned(),
             None => hostname::get().context("Failed to get hostname")?,
@@ -145,7 +141,7 @@ impl OsRebuildArgs {
             let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
             commands::CommandBuilder::default()
-                .args(sudo_args)
+                .root(true)
                 .args([switch_to_configuration, "test"])
                 .message("Activating configuration")
                 .build()?
@@ -154,7 +150,7 @@ impl OsRebuildArgs {
 
         if let Boot(_) | Switch(_) = rebuild_type {
             commands::CommandBuilder::default()
-                .args(sudo_args)
+                .root(true)
                 .args(["nix-env", "--profile", SYSTEM_PROFILE, "--set"])
                 .args([out_path.get_path()])
                 .build()?
@@ -168,7 +164,7 @@ impl OsRebuildArgs {
             let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
             commands::CommandBuilder::default()
-                .args(sudo_args)
+                .root(true)
                 .args([switch_to_configuration, "boot"])
                 .message("Adding configuration to bootloader")
                 .build()?
