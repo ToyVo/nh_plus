@@ -13,6 +13,7 @@ The original owner is unwilling to pull in changes to support darwin because the
 - `nh os switch` works on nix-darwin
 - nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
 - Use this fork of nh in nixDarwinModules.default and nixosModules.default
+- When $FLAKE isn't defined, default to `/etc/nixos`
 
 ## What does it do?
 
