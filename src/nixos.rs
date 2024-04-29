@@ -1,4 +1,6 @@
+use std::fs;
 use std::ops::Deref;
+use std::os::unix::fs::MetadataExt;
 
 use color_eyre::eyre::{bail, Context};
 use color_eyre::Result;
@@ -27,9 +29,7 @@ impl NHRunnable for interface::OsArgs {
 
 impl OsRebuildArgs {
     pub fn rebuild(&self, rebuild_type: &OsRebuildType) -> Result<()> {
-        if nix::unistd::Uid::effective().is_root() {
-            bail!("Don't run nh os as root. I will call sudo internally as needed");
-        }
+        let effective_uid = nix::unistd::Uid::effective();
 
         let hostname = match &self.hostname {
             Some(h) => h.to_owned(),
@@ -41,6 +41,15 @@ impl OsRebuildArgs {
         let out_link_str = out_link.to_str().unwrap();
         debug!("out_dir: {:?}", out_dir);
         debug!("out_link {:?}", out_link);
+
+        let flake_metadata =
+            fs::metadata(&self.common.flakeref).context("Failed to get metadata of flake")?;
+        let flake_uid = nix::unistd::Uid::from_raw(flake_metadata.uid());
+        debug!("flakeref is owned by root: {:?}", flake_uid.is_root());
+
+        // if we are root, then we do not need to elevate
+        // if we are not root, and the flake is owned by root, then we need to elevate
+        let elevation_required = !effective_uid.is_root() && flake_uid.is_root();
 
         #[cfg(target_os = "linux")]
         let configuration_module = "nixosConfigurations";
@@ -74,6 +83,7 @@ impl OsRebuildArgs {
             debug!("update_args: {:?}", update_args);
 
             commands::CommandBuilder::default()
+                .root(elevation_required)
                 .args(&update_args)
                 .message("Updating flake")
                 .build()?
@@ -142,7 +152,7 @@ impl OsRebuildArgs {
             let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
             commands::CommandBuilder::default()
-                .root(true)
+                .root(!effective_uid.is_root())
                 .args([switch_to_configuration, "test"])
                 .message("Activating configuration")
                 .build()?
@@ -151,7 +161,7 @@ impl OsRebuildArgs {
 
         if let Boot(_) | Switch(_) = rebuild_type {
             commands::CommandBuilder::default()
-                .root(true)
+                .root(!effective_uid.is_root())
                 .args([
                     "nix-env",
                     "--profile",
@@ -169,7 +179,7 @@ impl OsRebuildArgs {
                 let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
                 commands::CommandBuilder::default()
-                    .root(true)
+                    .root(!effective_uid.is_root())
                     .args([switch_to_configuration, "boot"])
                     .message("Adding configuration to bootloader")
                     .build()?
@@ -191,7 +201,7 @@ impl OsRebuildArgs {
                 let activate = activate.to_str().unwrap();
 
                 commands::CommandBuilder::default()
-                    .root(root)
+                    .root(!effective_uid.is_root())
                     .args([activate])
                     .message("Activating configuration")
                     .build()?
