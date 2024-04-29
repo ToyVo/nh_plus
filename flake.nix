@@ -35,6 +35,7 @@
       default = pkgs.callPackage ./devshell.nix {};
     });
 
-    nixosModules.default = import ./module.nix;
+    nixosModules.default = import ./module.nix self;
+    nixDarwinModules.default = import ./darwin-module.nix self;
   };
 }
