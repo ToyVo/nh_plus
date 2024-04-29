@@ -1,4 +1,6 @@
+use std::fs;
 use std::ops::Deref;
+use std::os::unix::fs::MetadataExt;
 use std::vec;
 
 use color_eyre::eyre::{bail, Context};
@@ -32,7 +34,7 @@ impl OsSubcommandArgs {
     pub fn rebuild(&self, rebuild_type: &OsCommandType) -> Result<()> {
         let use_sudo = if self.bypass_root_check {
             warn!("Bypassing root check, now running nix as root");
-            false
+            !nix::unistd::Uid::effective().is_root()
         } else {
             if nix::unistd::Uid::effective().is_root() {
                 bail!("Don't run nh os as root. I will call sudo internally as needed");
@@ -54,6 +56,15 @@ impl OsSubcommandArgs {
         };
 
         debug!(?out_path);
+
+        let flake_metadata =
+            fs::metadata(&self.common.flakeref).context("Failed to get metadata of flake")?;
+        let flake_uid = nix::unistd::Uid::from_raw(flake_metadata.uid());
+        debug!("flakeref is owned by root: {:?}", flake_uid.is_root());
+
+        // if we are root, then we do not need to elevate
+        // if we are not root, and the flake is owned by root, then we need to elevate
+        let elevation_required = use_sudo && flake_uid.is_root();
 
         #[cfg(target_os = "linux")]
         let configuration_module = "nixosConfigurations";
@@ -87,6 +98,7 @@ impl OsSubcommandArgs {
             debug!("update_args: {:?}", update_args);
 
             commands::CommandBuilder::default()
+                .root(elevation_required)
                 .args(&update_args)
                 .message("Updating flake")
                 .build()?
@@ -153,7 +165,7 @@ impl OsSubcommandArgs {
             let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
             commands::CommandBuilder::default()
-                .root(true)
+                .root(use_sudo)
                 .args([switch_to_configuration, "test"])
                 .message("Activating configuration")
                 .build()?
@@ -162,7 +174,7 @@ impl OsSubcommandArgs {
 
         if let Boot(_) | Switch(_) = rebuild_type {
             commands::CommandBuilder::default()
-                .root(true)
+                .root(use_sudo)
                 .args(["nix-env", "--profile", SYSTEM_PROFILE, "--set"])
                 .args([out_path.get_path()])
                 .build()?
@@ -178,7 +190,7 @@ impl OsSubcommandArgs {
                 let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
                 commands::CommandBuilder::default()
-                    .root(true)
+                    .root(use_sudo)
                     .args([switch_to_configuration, "boot"])
                     .message("Adding configuration to bootloader")
                     .build()?
@@ -200,7 +212,7 @@ impl OsSubcommandArgs {
                 let activate = activate.to_str().unwrap();
 
                 commands::CommandBuilder::default()
-                    .root(root)
+                    .root(use_sudo)
                     .args([activate])
                     .message("Activating configuration")
                     .build()?

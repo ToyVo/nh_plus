@@ -2,13 +2,19 @@ use ambassador::{delegatable_trait, Delegate};
 use anstyle::Style;
 use clap::{builder::Styles, Args, Parser, Subcommand};
 use color_eyre::Result;
-use std::{ffi::OsString, ops::Deref, path::PathBuf};
+use std::{ffi::OsString, ops::Deref, path::Path, path::PathBuf};
 
 #[derive(Debug, Clone, Default)]
 pub struct FlakeRef(String);
 impl From<&str> for FlakeRef {
     fn from(s: &str) -> Self {
         FlakeRef(s.to_string())
+    }
+}
+
+impl AsRef<Path> for FlakeRef {
+    fn as_ref(&self) -> &Path {
+        self.0.as_ref()
     }
 }
 // impl std::fmt::Display for FlakeRef {
