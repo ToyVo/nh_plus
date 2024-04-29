@@ -14,6 +14,7 @@ The original owner is unwilling to pull in changes to support darwin because the
 - nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
 - Use this fork of nh in nixDarwinModules.default and nixosModules.default
 - When $FLAKE isn't defined, default to `/etc/nixos`
+- `nh os switch --update` works when the flake is at `/etc/nixos` or in a root owned directory
 
 ## What does it do?
 
