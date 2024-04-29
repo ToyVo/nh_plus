@@ -133,7 +133,7 @@ pub struct CommonRebuildArgs {
     pub ask: bool,
 
     /// Flake reference to build
-    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath)]
+    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "/etc/nixos")]
     pub flakeref: FlakeRef,
 
     /// Update flake inputs before building specified configuration
