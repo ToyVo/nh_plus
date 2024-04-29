@@ -146,6 +146,10 @@ pub struct CommonRebuildArgs {
     #[arg(long, short = 'u')]
     pub update: bool,
 
+    /// Run git pull on the flake before building specified configuration
+    #[arg(long, short = 'p')]
+    pub pull: bool,
+
     /// Don't use nix-output-monitor for the build process
     #[arg(long)]
     pub no_nom: bool,
