@@ -66,6 +66,15 @@ impl OsSubcommandArgs {
         // if we are not root, and the flake is owned by root, then we need to elevate
         let elevation_required = use_sudo && flake_uid.is_root();
 
+        if self.common.pull {
+            commands::CommandBuilder::default()
+                .root(elevation_required)
+                .args(["git", "-C", &self.common.flakeref, "pull"])
+                .message("Pulling flake")
+                .build()?
+                .exec()?;
+        }
+
         #[cfg(target_os = "linux")]
         let configuration_module = "nixosConfigurations";
         #[cfg(target_os = "macos")]
