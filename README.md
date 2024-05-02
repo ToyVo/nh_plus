@@ -36,17 +36,92 @@ As the main features:
 
 ## Installation
 
-### Nixpkgs
+### NixDarwin Module
+This fork defines a nixDarwin module inspired by the nixosModule and the nixDarwin nix gc module
 
-nh is available in nixpkgs:
+This PR adds a nixDarwin module to nixDarwin itself https://github.com/LnL7/nix-darwin/pull/942
+and once that is pulled in and before I update my nixDarwin module, they will conflict, in which case you
+can manually override `programs.nh.package = inputs.nh.packages.${pkgs.stdenv.hostPlatform.system}.default;`
 
-- https://search.nixos.org/packages?channel=unstable&query=nh
-- Hydra status:
-  - x86_64-linux: https://hydra.nixos.org/job/nixos/trunk-combined/nixpkgs.nh.x86_64-linux
-  - aarch64-linux: https://hydra.nixos.org/job/nixos/trunk-combined/nixpkgs.nh.aarch64-linux
+Once that PR is pulled in I will update my nixDarwin module similarily to the nixos module in which case
+will then be able to choose between importing the module from this repo or just overriding the package
 
+<details>
+<summary>Example NixDarwin Flake</summary>
+<br>
+
+```nix
+{
+  description = "Example Darwin system flake";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nix-darwin.url = "github:LnL7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nh.url = "github:ToyVo/nh";
+  };
+
+  outputs = inputs@{ self, nix-darwin, nixpkgs, nh }:
+  let
+    configuration = { pkgs, ... }: {
+      # List packages installed in system profile. To search by name, run:
+      # $ nix-env -qaP | grep wget
+      environment.systemPackages =
+        [ pkgs.vim
+          # Always an option
+          # nh.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        ];
+
+      programs.nh = {
+        enable = true;
+        clean.enable = true;
+        # Installation option once https://github.com/LnL7/nix-darwin/pull/942 is merged:
+        # package = nh.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      };
+
+      # Auto upgrade nix package and the daemon service.
+      services.nix-daemon.enable = true;
+      # nix.package = pkgs.nix;
+
+      # Necessary for using flakes on this system.
+      nix.settings.experimental-features = "nix-command flakes";
+
+      # Create /etc/zshrc that loads the nix-darwin environment.
+      programs.zsh.enable = true;  # default shell on catalina
+      # programs.fish.enable = true;
+
+      # Set Git commit hash for darwin-version.
+      system.configurationRevision = self.rev or self.dirtyRev or null;
+
+      # Used for backwards compatibility, please read the changelog before changing.
+      # $ darwin-rebuild changelog
+      system.stateVersion = 4;
+
+      # The platform the configuration will be used on.
+      nixpkgs.hostPlatform = "x86_64-darwin";
+    };
+  in
+  {
+    # Build darwin flake using:
+    # $ darwin-rebuild build --flake .#simple
+    darwinConfigurations."simple" = nix-darwin.lib.darwinSystem {
+      modules = [ 
+        configuration
+        # Primary installation option:
+        nh.nixDarwinModules.default
+      ];
+    };
+
+    # Expose the package set, including overlays, for convenience.
+    darwinPackages = self.darwinConfigurations."simple".pkgs;
+  };
+}
+```
+
+</details>
 
 ### NixOS module
+This fork has a nixos module that simply sets programs.nh.package to this fork
 
 The NixOS module has some niceties, like an alternative to `nix.gc.automatic` which also cleans XDG profiles, result and direnv GC roots.
 
