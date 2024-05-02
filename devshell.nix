@@ -1,13 +1,13 @@
-{
-  mkShell,
-  rust-analyzer-unwrapped,
-  rustfmt,
-  clippy,
-  nvd,
-  nix-output-monitor,
-  cargo,
-  rustc,
-  rustPlatform,
+{ mkShell
+, rust-analyzer-unwrapped
+, rustfmt
+, clippy
+, nvd
+, nix-output-monitor
+, cargo
+, rustc
+, rustPlatform
+,
 }:
 mkShell {
   strictDeps = true;
@@ -23,11 +23,11 @@ mkShell {
     nix-output-monitor
   ];
 
-  buildInputs = [];
+  buildInputs = [ ];
 
   env = {
     NH_NOM = "1";
-    RUST_LOG = "nh=trace";
+    RUST_LOG = "nh_darwin=trace";
     RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
   };
 }

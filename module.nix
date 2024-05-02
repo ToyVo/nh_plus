@@ -1,3 +1,3 @@
-self: { pkgs, ... }: {
-  programs.nh.package = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+self: { pkgs, lib, ... }: {
+  programs.nh.package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.default;
 }

@@ -1,5 +1,5 @@
 [package]
-name = "nh"
+name = "nh_darwin"
 version = "3.5.24"
 edition = "2021"
 license = "EUPL-1.2"

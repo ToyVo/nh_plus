@@ -9,21 +9,14 @@
             "request": "launch",
             "name": "Debug nh search",
             "cargo": {
-                "args": [
-                    "build",
-                    "--bin=nh",
-                    "--package=nh"
-                ],
+                "args": ["build", "--bin=nh_darwin", "--package=nh_darwin"],
                 "filter": {
-                    "name": "nh",
+                    "name": "nh_darwin",
                     "kind": "bin"
                 }
             },
-            "args": [
-                "search",
-                "vscode"
-            ],
+            "args": ["search", "vscode"],
             "cwd": "${workspaceFolder}"
-        },
+        }
     ]
 }

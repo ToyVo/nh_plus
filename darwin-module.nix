@@ -1,8 +1,5 @@
-self:{ config
-, lib
-, pkgs
-, ...
-}:
+# Notice: this file will only exist until this pr is merged https://github.com/LnL7/nix-darwin/pull/942
+self: { config, lib, pkgs, ... }:
 let
   cfg = config.programs.nh;
 in
@@ -10,7 +7,7 @@ in
   meta.maintainers = [ lib.maintainers.ToyVo ];
 
   options.programs.nh = {
-    enable = lib.mkEnableOption "nh, yet another Nix CLI helper";
+    enable = lib.mkEnableOption "nh_darwin, yet another Nix CLI helper. Works on NixOS, NixDarwin, and HomeManager Standalone";
 
     package = lib.mkPackageOption pkgs "nh" { } // {
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -22,12 +19,12 @@ in
       description = ''
         The path that will be used for the `FLAKE` environment variable.
 
-        `FLAKE` is used by nh as the default flake for performing actions, like `nh os switch`.
+        `FLAKE` is used by nh_darwin as the default flake for performing actions, like `nh_darwin os switch`.
       '';
     };
 
     clean = {
-      enable = lib.mkEnableOption "periodic garbage collection with nh clean all";
+      enable = lib.mkEnableOption "periodic garbage collection with nh_darwin clean all";
 
       # Not in NixOS module
       user = lib.mkOption {
@@ -52,9 +49,9 @@ in
         default = "";
         example = "--keep 5 --keep-since 3d";
         description = ''
-          Options given to nh clean when the service is run automatically.
+          Options given to nh_darwin clean when the service is run automatically.
 
-          See `nh clean all --help` for more information.
+          See `nh_darwin clean all --help` for more information.
         '';
       };
     };
