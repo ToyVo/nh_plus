@@ -1,13 +1,13 @@
-{
-  mkShell,
-  rust-analyzer-unwrapped,
-  rustfmt,
-  clippy,
-  nvd,
-  nix-output-monitor,
-  cargo,
-  rustc,
-  rustPlatform,
+{ mkShell
+, rust-analyzer-unwrapped
+, rustfmt
+, clippy
+, nvd
+, nix-output-monitor
+, cargo
+, rustc
+, rustPlatform
+,
 }:
 mkShell {
   strictDeps = true;
@@ -23,7 +23,7 @@ mkShell {
     nix-output-monitor
   ];
 
-  buildInputs = [];
+  buildInputs = [ ];
 
   env = {
     NH_NOM = "1";

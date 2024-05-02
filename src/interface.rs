@@ -105,7 +105,7 @@ pub struct CommonReplArgs {
 
 #[derive(Args, Debug)]
 #[clap(verbatim_doc_comment)]
-/// NixOS functionality
+/// NixOS / nix-darwin functionality
 ///
 /// Implements functionality mostly around but not exclusive to nixos-rebuild
 pub struct OsArgs {
