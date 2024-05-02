@@ -748,7 +748,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "nh"
+name = "nh_darwin"
 version = "3.5.25"
 dependencies = [
  "ambassador",

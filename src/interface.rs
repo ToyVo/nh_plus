@@ -79,7 +79,7 @@ pub enum NHCommand {
 
 #[derive(Args, Debug)]
 #[clap(verbatim_doc_comment)]
-/// NixOS functionality
+/// NixOS / nix-darwin functionality
 ///
 /// Reimplementations of nixos-rebuild
 pub struct OsArgs {
