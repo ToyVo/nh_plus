@@ -15,7 +15,7 @@ assert use-nom -> nix-output-monitor != null; let
   cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 in
   rustPlatform.buildRustPackage {
-    pname = "nh";
+    pname = "nh-darwin";
     version = "${cargoToml.package.version}-${rev}";
 
     src = lib.fileset.toSource {
@@ -43,25 +43,25 @@ in
 
     preFixup = ''
       mkdir completions
-      $out/bin/nh completions --shell bash > completions/nh.bash
-      $out/bin/nh completions --shell zsh > completions/nh.zsh
-      $out/bin/nh completions --shell fish > completions/nh.fish
+      $out/bin/nh-darwin completions --shell bash > completions/nh-darwin.bash
+      $out/bin/nh-darwin completions --shell zsh > completions/nh-darwin.zsh
+      $out/bin/nh-darwin completions --shell fish > completions/nh-darwin.fish
 
       installShellCompletion completions/*
     '';
 
     postFixup = ''
-      wrapProgram $out/bin/nh \
+      wrapProgram $out/bin/nh-darwin \
         --prefix PATH : ${lib.makeBinPath runtimeDeps}
     '';
 
     cargoLock.lockFile = ./Cargo.lock;
 
     meta = {
-      description = "Yet another nix cli helper";
+      description = "Yet another nix cli helper. Works on NixOS, NixDarwin, and HomeManager Standalone";
       homepage = "https://github.com/ToyVo/nh";
       license = lib.licenses.eupl12;
-      mainProgram = "nh";
+      mainProgram = "nh-darwin";
       maintainers = with lib.maintainers; [drupol viperML ToyVo];
     };
   }

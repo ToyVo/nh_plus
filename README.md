@@ -3,6 +3,7 @@
 <h1 align="center">nh-darwin</h1>
 
 <h6 align="center">Because the name "yet-another-<u>n</u>ix-<u>h</u>elper" was too long to type...</h1>
+Works on NixOS, NixDarwin, and HomeManager Standalone
 
 ## Why fork?
 

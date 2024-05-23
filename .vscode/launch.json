@@ -9,13 +9,9 @@
             "request": "launch",
             "name": "Debug nh search",
             "cargo": {
-                "args": [
-                    "build",
-                    "--bin=nh",
-                    "--package=nh"
-                ],
+                "args": ["build", "--bin=nh-darwin", "--package=nh-darwin"],
                 "filter": {
-                    "name": "nh",
+                    "name": "nh-darwin",
                     "kind": "bin"
                 }
             },

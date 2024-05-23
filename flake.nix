@@ -27,16 +27,16 @@
     rev = self.shortRev or self.dirtyShortRev or "dirty";
   in {
     overlays.default = final: prev: {
-      nh = final.callPackage ./package.nix {
+      nh-darwin = final.callPackage ./package.nix {
         inherit rev;
       };
     };
 
     packages = forAllSystems (pkgs: rec {
-      nh = pkgs.callPackage ./package.nix {
+      nh-darwin = pkgs.callPackage ./package.nix {
         inherit rev;
       };
-      default = nh;
+      default = nh-darwin;
     });
 
     devShells = forAllSystems (pkgs: {

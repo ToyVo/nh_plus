@@ -6,7 +6,7 @@ in {
   meta.maintainers = with lib.maintainers; [ johnrtitor ];
 
   options.programs.nh = {
-    enable = lib.mkEnableOption "nh, yet another Nix CLI helper";
+    enable = lib.mkEnableOption "nh-darwin, yet another Nix CLI helper. Works on NixOS, NixDarwin, and HomeManager Standalone";
 
     package = lib.mkPackageOption pkgs "nh" { } // {
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
