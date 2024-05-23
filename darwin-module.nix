@@ -1,8 +1,5 @@
-self:{ config
-, lib
-, pkgs
-, ...
-}:
+# Notice: this file will only exist until this pr is merged https://github.com/LnL7/nix-darwin/pull/942
+self: { config , lib , pkgs , ...  }:
 let
   cfg = config.programs.nh;
 in

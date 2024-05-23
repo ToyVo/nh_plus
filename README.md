@@ -1,6 +1,6 @@
 [![dependency status](https://deps.rs/repo/github/ToyVo/nh/status.svg)](https://deps.rs/repo/github/ToyVo/nh)
 
-<h1 align="center">nh - fork</h1>
+<h1 align="center">nh-darwin</h1>
 
 <h6 align="center">Because the name "yet-another-<u>n</u>ix-<u>h</u>elper" was too long to type...</h1>
 
@@ -105,7 +105,7 @@ will then be able to choose between importing the module from this repo or just 
     # Build darwin flake using:
     # $ darwin-rebuild build --flake .#simple
     darwinConfigurations."simple" = nix-darwin.lib.darwinSystem {
-      modules = [ 
+      modules = [
         configuration
         # Primary installation option:
         nh.nixDarwinModules.default

@@ -1,24 +1,21 @@
 {
   mkShell,
-  rust-analyzer-unwrapped,
-  rustfmt,
-  clippy,
   nvd,
   nix-output-monitor,
-  cargo,
-  rustc,
-  rustPlatform,
+  rust-bin
 }:
-mkShell {
+let
+  toolchain = rust-bin.stable.latest.default.override {
+    extensions = [
+      "rust-src" "rust-analyzer" "rustfmt" "clippy"
+    ];
+  };
+in
+mkShell  {
   strictDeps = true;
 
   nativeBuildInputs = [
-    cargo
-    rustc
-
-    rust-analyzer-unwrapped
-    rustfmt
-    clippy
+    toolchain
     nvd
     nix-output-monitor
   ];
@@ -28,6 +25,6 @@ mkShell {
   env = {
     NH_NOM = "1";
     RUST_LOG = "nh=trace";
-    RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
+    RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
   };
 }

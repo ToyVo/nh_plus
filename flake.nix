@@ -1,11 +1,13 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs = {
     self,
     nixpkgs,
+    rust-overlay,
   }: let
     forAllSystems = function:
       nixpkgs.lib.genAttrs [
@@ -14,7 +16,13 @@
         # experimental
         "x86_64-darwin"
         "aarch64-darwin"
-      ] (system: function nixpkgs.legacyPackages.${system});
+      ] (system:
+        function (import nixpkgs {
+          inherit system;
+          overlays = [
+            (import rust-overlay)
+          ];
+        }));
 
     rev = self.shortRev or self.dirtyShortRev or "dirty";
   in {
@@ -36,6 +44,13 @@
     });
 
     nixosModules.default = import ./module.nix self;
-    nixDarwinModules.default = import ./darwin-module.nix self;
+    # use this module before this pr is merged https://github.com/LnL7/nix-darwin/pull/942
+    nixDarwinModules.prebuiltin = import ./darwin-module.nix self;
+    # use this module after that pr is merged
+    nixDarwinModules.default = import ./module.nix self;
+    # use this module before this pr is merged https://github.com/nix-community/home-manager/pull/5304
+    homeManagerModules.prebuiltin = import ./home-manager-module.nix self;
+    # use this module after that pr is merged
+    homeManagerModules.default = import ./module.nix self;
   };
 }
