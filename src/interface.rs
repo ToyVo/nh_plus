@@ -107,6 +107,15 @@ pub struct OsRebuildArgs {
     #[command(flatten)]
     pub common: CommonRebuildArgs,
 
+    /// Flake reference to build
+    #[cfg(target_os = "linux")]
+    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "/etc/nixos")]
+    pub flakeref: FlakeRef,
+    /// Flake reference to build
+    #[cfg(target_os = "macos")]
+    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "~/.nixpkgs")]
+    pub flakeref: FlakeRef,
+
     /// Output to choose from the flakeref. Hostname is used by default
     #[arg(long, short = 'H', global = true)]
     pub hostname: Option<OsString>,
@@ -137,10 +146,6 @@ pub struct CommonRebuildArgs {
     /// Ask for confirmation
     #[arg(long, short)]
     pub ask: bool,
-
-    /// Flake reference to build
-    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "/etc/nixos")]
-    pub flakeref: FlakeRef,
 
     /// Update flake inputs before building specified configuration
     #[arg(long, short = 'u')]
@@ -278,6 +283,10 @@ pub enum HomeSubcommand {
 pub struct HomeRebuildArgs {
     #[command(flatten)]
     pub common: CommonRebuildArgs,
+
+    /// Flake reference to build
+    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "~/.config/home-manager")]
+    pub flakeref: FlakeRef,
 
     /// Name of the flake homeConfigurations attribute, like username@hostname
     #[arg(long, short)]

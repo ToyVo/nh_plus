@@ -44,24 +44,32 @@ impl HomeRebuildArgs {
 
         debug!(?out_path);
 
+        if self.common.pull {
+            commands::CommandBuilder::default()
+                .args(["git", "-C", &self.flakeref, "pull"])
+                .message("Pulling flake")
+                .build()?
+                .exec()?;
+        }
+
         let username = std::env::var("USER").expect("Couldn't get username");
 
         let hm_config_name = match &self.configuration {
             Some(name) => {
-                if configuration_exists(&self.common.flakeref, name)? {
+                if configuration_exists(&self.flakeref, name)? {
                     name.to_owned()
                 } else {
                     return Err(HomeRebuildError::ConfigName(name.to_owned()).into());
                 }
             }
-            None => get_home_output(&self.common.flakeref, &username)?,
+            None => get_home_output(&self.flakeref, &username)?,
         };
 
         debug!("hm_config_name: {}", hm_config_name);
 
         let flakeref = format!(
             "{}#homeConfigurations.\"{}\".config.home.activationPackage",
-            &self.common.flakeref.deref(),
+            &self.flakeref.deref(),
             hm_config_name
         );
 
@@ -70,6 +78,36 @@ impl HomeRebuildArgs {
             let nix_version = get_nix_version().unwrap_or_else(|_| {
                 panic!("Failed to get Nix version. Custom Nix fork?");
             });
+
+            let status = commands::CommandBuilder::default()
+                .args([
+                    "git",
+                    "-C",
+                    &self.flakeref,
+                    "diff",
+                    "--name-only",
+                    "--diff-filter=U",
+                ])
+                .message("Checking for conflicts")
+                .build()?
+                .exec_capture()?;
+
+            if let Some(conflict) = status {
+                if conflict == "flake.lock\n".to_string() {
+                    commands::CommandBuilder::default()
+                        .args(["git", "-C", &self.flakeref, "reset", "flake.lock"])
+                        .message("Resetting flake.lock")
+                        .build()?
+                        .exec()?;
+                    commands::CommandBuilder::default()
+                        .args(["git", "-C", &self.flakeref, "checkout", "flake.lock"])
+                        .message("Checking out flake.lock")
+                        .build()?
+                        .exec()?;
+                } else {
+                    panic!("Conflicts dectected that were more than just flake.lock");
+                }
+            }
 
             // Default interface for updating flake inputs
             let mut update_args = vec!["nix", "flake", "update"];
@@ -81,7 +119,7 @@ impl HomeRebuildArgs {
                 }
             }
 
-            update_args.push(&self.common.flakeref);
+            update_args.push(&self.flakeref);
 
             debug!("nix_version: {:?}", nix_version);
             debug!("update_args: {:?}", update_args);
