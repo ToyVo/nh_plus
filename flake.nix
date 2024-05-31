@@ -1,7 +1,7 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/~0.1.tar.gz";
+    rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/~0.1.tar.gz";
   };
 
   outputs = {
