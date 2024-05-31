@@ -13,6 +13,7 @@ use crate::interface::NHRunnable;
 use crate::util::get_elevation_program;
 use color_eyre::Result;
 use tracing::debug;
+use std::ffi::OsString;
 
 const NH_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -27,8 +28,12 @@ fn main() -> Result<()> {
 fn self_elevate() -> ! {
     use std::os::unix::process::CommandExt;
 
-    let mut cmd = std::process::Command::new(get_elevation_program().unwrap());
-    cmd.args(std::env::args());
+    let (program, mut additional_args) = get_elevation_program().unwrap();
+    for arg in std::env::args() {
+        additional_args.push(OsString::from(arg));
+    }
+    let mut cmd = std::process::Command::new(program);
+    cmd.args(additional_args);
     debug!("{:?}", cmd);
     let err = cmd.exec();
     panic!("{}", err);

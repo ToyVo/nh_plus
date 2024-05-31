@@ -8,6 +8,7 @@ use which::which;
 use std::ffi::OsString;
 use std::process::Command;
 use std::str;
+use subprocess::{Exec, Redirection};
 
 /// Compares two semantic versions and returns their order.
 ///
@@ -79,21 +80,37 @@ pub fn get_nix_version() -> Result<String> {
 ///
 /// * `Result<OsString>` - The absolute path to the privilege elevation program binary or an error if a
 /// program can't be found.
-pub fn get_elevation_program() -> Result<OsString> {
+pub fn get_elevation_program() -> Result<(OsString, Vec<OsString>)> {
     let has_doas = which("doas");
     if let Ok(path) = has_doas {
         debug!(?path, "doas path found");
-        return Ok(path.into_os_string());
+        return Ok((path.into_os_string(), vec![]));
     }
     let has_sudo = which("sudo");
     if let Ok(path) = has_sudo {
         debug!(?path, "sudo path found");
-        return Ok(path.into_os_string());
+
+        // Check for if sudo has the preserve-env flag
+        let sudo_os = path.into_os_string();
+        let cmd = Exec::cmd(sudo_os.clone())
+            .args([OsString::from("--help")].as_ref())
+            .stderr(Redirection::None)
+            .stdout(Redirection::Pipe);
+
+        let help = cmd.capture()?.stdout_str();
+
+        let args = if help.contains("--preserve-env") {
+            vec![OsString::from("-H"), OsString::from("--preserve-env=PATH"), OsString::from("env")]
+        } else {
+            vec![OsString::from("-H")]
+        };
+
+        return Ok((sudo_os, args));
     }
     let has_pkexec = which("pkexec");
     if let Ok(path) = has_pkexec {
         debug!(?path, "pkexec path found");
-        return Ok(path.into_os_string());
+        return Ok((path.into_os_string(), vec![]));
     }
 
     Err(eyre::eyre!("No elevation strategy found"))
