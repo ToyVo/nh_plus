@@ -58,7 +58,7 @@ impl OsSubcommandArgs {
         debug!(?out_path);
 
         let flake_metadata =
-            fs::metadata(&self.common.flakeref).context("Failed to get metadata of flake")?;
+            fs::metadata(&self.flakeref).context("Failed to get metadata of flake")?;
         let flake_uid = nix::unistd::Uid::from_raw(flake_metadata.uid());
         debug!("flakeref is owned by root: {:?}", flake_uid.is_root());
 
@@ -69,7 +69,7 @@ impl OsSubcommandArgs {
         if self.common.pull {
             commands::CommandBuilder::default()
                 .root(elevation_required)
-                .args(["git", "-C", &self.common.flakeref, "pull"])
+                .args(["git", "-C", &self.flakeref, "pull"])
                 .message("Pulling flake")
                 .build()?
                 .exec()?;
@@ -82,7 +82,7 @@ impl OsSubcommandArgs {
 
         let flake_output = format!(
             "{}#{configuration_module}.\"{hostname:?}\".config.system.build.toplevel",
-            &self.common.flakeref.deref()
+            &self.flakeref.deref()
         );
 
         if self.common.update {
@@ -90,6 +90,36 @@ impl OsSubcommandArgs {
             let nix_version = get_nix_version().unwrap_or_else(|_| {
                 panic!("Failed to get Nix version. Custom Nix fork?");
             });
+
+            let status = commands::CommandBuilder::default()
+                .args([
+                    "git",
+                    "-C",
+                    &self.flakeref,
+                    "diff",
+                    "--name-only",
+                    "--diff-filter=U",
+                ])
+                .message("Checking for conflicts")
+                .build()?
+                .exec_capture()?;
+
+            if let Some(conflict) = status {
+                if conflict == "flake.lock\n".to_string() {
+                    commands::CommandBuilder::default()
+                        .args(["git", "-C", &self.flakeref, "reset", "flake.lock"])
+                        .message("Resetting flake.lock")
+                        .build()?
+                        .exec()?;
+                    commands::CommandBuilder::default()
+                        .args(["git", "-C", &self.flakeref, "checkout", "flake.lock"])
+                        .message("Checking out flake.lock")
+                        .build()?
+                        .exec()?;
+                } else {
+                    panic!("Conflicts dectected that were more than just flake.lock");
+                }
+            }
 
             // Default interface for updating flake inputs
             let mut update_args = vec!["nix", "flake", "update"];
@@ -101,7 +131,7 @@ impl OsSubcommandArgs {
                 }
             }
 
-            update_args.push(&self.common.flakeref);
+            update_args.push(&self.flakeref);
 
             debug!("nix_version: {:?}", nix_version);
             debug!("update_args: {:?}", update_args);
@@ -182,8 +212,17 @@ impl OsSubcommandArgs {
         }
 
         if let Boot(_) | Switch(_) = rebuild_type {
+            let profile_metadata =
+                fs::metadata(SYSTEM_PROFILE).context("Failed to get metadata of profile")?;
+            let profile_uid = nix::unistd::Uid::from_raw(profile_metadata.uid());
+            let profile_gid = nix::unistd::Gid::from_raw(profile_metadata.gid());
+            let can_write = !profile_metadata.permissions().readonly()
+                && (nix::unistd::Uid::effective() == profile_uid
+                    || nix::unistd::Gid::effective() == profile_gid);
+            debug!("${SYSTEM_PROFILE} is writable by user: {can_write}");
+
             commands::CommandBuilder::default()
-                .root(use_sudo)
+                .root(use_sudo && !can_write)
                 .args(["nix-env", "--profile", SYSTEM_PROFILE, "--set"])
                 .args([out_path.get_path()])
                 .build()?
