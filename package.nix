@@ -59,7 +59,7 @@ in
 
     meta = {
       description = "Yet another nix cli helper. Works on NixOS, NixDarwin, and HomeManager Standalone";
-      homepage = "https://github.com/ToyVo/nh";
+      homepage = "https://github.com/ToyVo/nh-darwin";
       license = lib.licenses.eupl12;
       mainProgram = "nh-darwin";
       maintainers = with lib.maintainers; [drupol viperML ToyVo];

@@ -55,9 +55,14 @@ impl NHRunnable for interface::CleanMode {
                     let path = read_dir?.path();
                     profiles.extend(profiles_in_dir(path));
                 }
-                debug!("Scanning XDG profiles for users 0, 1000-1100");
+                #[cfg(target_os = "linux")]
+                let start_uid = 1000;
+                #[cfg(target_os = "macos")]
+                let start_uid = 501;
+                let end_uid = start_uid + 100;
+                debug!("Scanning XDG profiles for users 0, ${start_uid}-${end_uid}");
                 for user in unsafe { uzers::all_users() } {
-                    if user.uid() >= 1000 && user.uid() < 1100 || user.uid() == 0 {
+                    if user.uid() >= start_uid && user.uid() < end_uid || user.uid() == 0 {
                         debug!(?user, "Adding XDG profiles for user");
                         profiles.extend(profiles_in_dir(
                             user.home_dir().join(".local/state/nix/profiles"),

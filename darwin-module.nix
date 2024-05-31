@@ -19,12 +19,12 @@ in
       description = ''
         The path that will be used for the `FLAKE` environment variable.
 
-        `FLAKE` is used by nh as the default flake for performing actions, like `nh os switch`.
+        `FLAKE` is used by nh-darwin as the default flake for performing actions, like `nh-darwin os switch`.
       '';
     };
 
     clean = {
-      enable = lib.mkEnableOption "periodic garbage collection with nh clean all";
+      enable = lib.mkEnableOption "periodic garbage collection with nh-darwin clean all";
 
       # Not in NixOS module
       user = lib.mkOption {
@@ -49,9 +49,9 @@ in
         default = "";
         example = "--keep 5 --keep-since 3d";
         description = ''
-          Options given to nh clean when the service is run automatically.
+          Options given to nh-darwin clean when the service is run automatically.
 
-          See `nh clean all --help` for more information.
+          See `nh-darwin clean all --help` for more information.
         '';
       };
     };

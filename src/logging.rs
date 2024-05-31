@@ -55,7 +55,7 @@ where
 pub(crate) fn setup_logging(verbose: bool) -> Result<()> {
     color_eyre::config::HookBuilder::default()
         .display_location_section(true)
-        .panic_section("Please report the bug at https://github.com/ToyVo/nh/issues")
+        .panic_section("Please report the bug at https://github.com/ToyVo/nh-darwin/issues")
         .display_env_section(false)
         .install()?;
 

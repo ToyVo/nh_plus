@@ -18,7 +18,7 @@ in {
       description = ''
         The path that will be used for the `FLAKE` environment variable.
 
-        `FLAKE` is used by nh as the default flake for performing actions, like `nh os switch`.
+        `FLAKE` is used by nh-darwin as the default flake for performing actions, like `nh-darwin os switch`.
       '';
     };
   };
