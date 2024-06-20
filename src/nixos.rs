@@ -43,14 +43,19 @@ impl OsRebuildArgs {
         debug!("out_dir: {:?}", out_dir);
         debug!("out_link {:?}", out_link);
 
-        let flake_metadata =
-            fs::metadata(&self.flakeref).context("Failed to get metadata of flake")?;
-        let flake_uid = nix::unistd::Uid::from_raw(flake_metadata.uid());
-        debug!("flakeref is owned by root: {:?}", flake_uid.is_root());
+        // check if flake is owned by root
+        let flake_is_owned_by_root = match fs::metadata(&self.flakeref) {
+            Ok(metadata) => nix::unistd::Uid::from_raw(metadata.uid()).is_root(),
+            // flakeref is not found on system or user does not have permissions to get metadata
+            // so we assume it is not owned by root
+            // (could be a flake from github or the registry)
+            Err(_) => false, 
+        };
+        debug!("flakeref is owned by root: {:?}", flake_is_owned_by_root);
 
         // if we are root, then we do not need to elevate
         // if we are not root, and the flake is owned by root, then we need to elevate
-        let elevation_required = !effective_uid.is_root() && flake_uid.is_root();
+        let elevation_required = !effective_uid.is_root() && flake_is_owned_by_root;
 
         if self.common.pull {
             commands::CommandBuilder::default()
