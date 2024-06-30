@@ -96,6 +96,7 @@ impl MaybeTempPath for (PathBuf, TempDir) {
 ///
 /// 1. `doas`
 /// 1. `sudo`
+/// 1. `run0`
 /// 1. `pkexec`
 ///
 /// The logic for choosing this order is that a person with doas installed is more likely
@@ -115,7 +116,7 @@ pub fn get_elevation_program() -> Result<OsString> {
         return Ok(path?.into_os_string());
     }
 
-    const STRATEGIES: [&str; 3] = ["doas", "sudo", "pkexec"];
+    const STRATEGIES: [&str; 4] = ["doas", "sudo", "run0", "pkexec"];
 
     for strategy in STRATEGIES {
         if let Ok(path) = which(strategy) {
