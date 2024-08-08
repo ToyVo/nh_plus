@@ -10,6 +10,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
+use subprocess::{Exec, Redirection};
 
 use crate::interface::NHParser;
 
@@ -106,14 +107,14 @@ impl MaybeTempPath for (PathBuf, TempDir) {
 ///
 /// * `Result<OsString>` - The absolute path to the privilege elevation program binary or an error if a
 /// program can't be found.
-pub fn get_elevation_program() -> Result<OsString> {
+pub fn get_elevation_program() -> Result<(OsString, Vec<OsString>)> {
     let args = <NHParser as clap::Parser>::parse();
     if let Some(path) = args.elevation_program.map(|path| which(path)) {
         debug!(
             ?path,
             "privilege elevation path specified via command line argument"
         );
-        return Ok(path?.into_os_string());
+        return Ok((path?.into_os_string(), vec![]));
     }
 
     const STRATEGIES: [&str; 4] = ["doas", "sudo", "run0", "pkexec"];
@@ -121,7 +122,28 @@ pub fn get_elevation_program() -> Result<OsString> {
     for strategy in STRATEGIES {
         if let Ok(path) = which(strategy) {
             debug!(?path, "{strategy} path found");
-            return Ok(path.into_os_string());
+            let mut args = vec![];
+            if strategy == "sudo" {
+                // Check for if sudo has the preserve-env flag
+                let preserve_env = Exec::cmd(path.clone().into_os_string())
+                    .args([OsString::from("--help")].as_ref())
+                    .stderr(Redirection::None)
+                    .stdout(Redirection::Pipe)
+                    .capture()?
+                    .stdout_str()
+                    .contains("--preserve-env");
+
+                args = if preserve_env {
+                    vec![
+                        OsString::from("-H"),
+                        OsString::from("--preserve-env=PATH"),
+                        OsString::from("env"),
+                    ]
+                } else {
+                    vec![OsString::from("-H")]
+                };
+            }
+            return Ok((path.into_os_string(), args));
         }
     }
 

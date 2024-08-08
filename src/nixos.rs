@@ -116,8 +116,8 @@ impl OsSubcommandArgs {
                         .message("Checking out flake.lock")
                         .build()?
                         .exec()?;
-                } else {
-                    panic!("Conflicts dectected that were more than just flake.lock");
+                } else if conflict != "" {
+                    panic!("Conflicts dectected that were more than just flake.lock, {conflict:?}");
                 }
             }
 
