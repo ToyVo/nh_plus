@@ -46,7 +46,7 @@ impl Command {
         let (head, tail) = self.get_cmd_head_args()?;
 
         let cmd = Exec::cmd(head)
-            .args(tail)
+            .args(tail.as_ref())
             .stderr(Redirection::None)
             .stdout(Redirection::None);
 
@@ -70,7 +70,7 @@ impl Command {
         let (head, tail) = self.get_cmd_head_args()?;
 
         let cmd = Exec::cmd(head)
-            .args(tail)
+            .args(tail.as_ref())
             .stderr(Redirection::None)
             .stdout(Redirection::Pipe);
 
@@ -86,12 +86,20 @@ impl Command {
         }
     }
 
-    fn get_cmd_head_args<'a>(&'a self) -> Result<(OsString, &'a [OsString])> {
+    fn get_cmd_head_args(&self) -> Result<(OsString, Vec<OsString>)> {
         if self.root {
-            Ok((get_elevation_program()?, self.args.as_ref()))
+            let (program, additional_args) = get_elevation_program()?;
+            let concatenated = [&additional_args[..], &self.args[..]].concat();
+            Ok((program, concatenated))
         } else {
-            let [head, tail @ ..] = &*self.args else {
+            if self.args.len() == 0 {
                 bail!("Args was length 0");
+            }
+            let head = self.args[0].clone();
+            let tail = if self.args.len() > 1 {
+                self.args[1..].to_vec()
+            } else {
+                vec![]
             };
             Ok((head.clone(), tail))
         }
@@ -157,7 +165,6 @@ impl BuildCommand {
             debug!(?cmd);
             cmd.join()
         };
-
         match exit.wrap_err(self.message.clone())? {
             ExitStatus::Exited(0) => (),
             other => bail!(ExitError(other)),
