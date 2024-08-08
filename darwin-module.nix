@@ -2,6 +2,15 @@
 self: { config, lib, pkgs, ... }:
 let
   cfg = config.programs.nh;
+  nh_darwin = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  nh = (pkgs.runCommand "${nh_darwin.pname}-docker-compat-${nh_darwin.version}"
+    {
+      outputs = [ "out" ];
+      inherit (nh_darwin) meta;
+    } ''
+    mkdir -p $out/bin
+    ln -s ${nh_darwin}/bin/nh_darwin $out/bin/nh
+  '');
 in
 {
   meta.maintainers = [ lib.maintainers.ToyVo ];
@@ -9,8 +18,10 @@ in
   options.programs.nh = {
     enable = lib.mkEnableOption "nh_darwin, yet another Nix CLI helper. Works on NixOS, NixDarwin, and HomeManager Standalone";
 
+    alias = lib.mkEnableOption "Enable alias of nh_darwin to nh";
+
     package = lib.mkPackageOption pkgs "nh" { } // {
-      default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      default = nh_darwin;
     };
 
     flake = lib.mkOption {
@@ -76,8 +87,10 @@ in
       }
     ];
 
+    nixpkgs.overlays = [ self.overlays.default ];
+
     environment = lib.mkIf cfg.enable {
-      systemPackages = [ cfg.package ];
+      systemPackages = [ cfg.package ] ++ lib.optionals cfg.alias [ nh ];
       variables = lib.mkIf (cfg.flake != null) {
         FLAKE = cfg.flake;
       };

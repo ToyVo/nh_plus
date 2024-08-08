@@ -22,6 +22,10 @@ fn main() -> Result<()> {
     let args = <NHParser as clap::Parser>::parse();
     crate::logging::setup_logging(args.verbose)?;
     tracing::debug!(?args);
+    if args.verbose {
+        let path = std::env::var("PATH").unwrap_or_default();
+        tracing::debug!(?path);
+    }
 
     args.command.run()
 }

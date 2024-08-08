@@ -1,4 +1,4 @@
-[![dependency status](https://deps.rs/repo/github/ToyVo/nh-darwin/status.svg)](https://deps.rs/repo/github/ToyVo/nh_darwin)
+[![dependency status](https://deps.rs/repo/github/ToyVo/nh_darwin/status.svg)](https://deps.rs/repo/github/ToyVo/nh_darwin)
 
 <h1 align="center">nh_darwin</h1>
 
@@ -11,20 +11,21 @@ The original owner is unwilling to pull in changes to support darwin because the
 
 ## What has been added?
 
-- `nh_darwin os switch` works on nix-darwin
-- nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
-- Use this fork of nh in nixDarwinModules.default and nixosModules.default
-- When $FLAKE isn't defined, default to `/etc/nixos`
-- `nh_darwin os switch --update` works when the flake is at `/etc/nixos` or in a root owned directory
+-   `nh_darwin os switch` works on nix-darwin
+-   nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
+-   Use this fork of nh in nixDarwinModules.default and nixosModules.default
+-   When $FLAKE isn't defined, default to `/etc/nixos`
+-   `nh_darwin os switch --update` works when the flake is at `/etc/nixos` or in a root owned directory
 
 ## What does it do?
 
 NH reimplements some basic nix commands. Adding functionality on top of the existing solutions, like nixos-rebuild, home-manager cli or nix itself.
 
 As the main features:
-- Tree of builds with [nix-output-monitor](https://github.com/maralorn/nix-output-monitor)
-- Visualization of the upgrade diff with [nvd](https://gitlab.com/khumba/nvd)
-- Asking for confirmation before performing activation
+
+-   Tree of builds with [nix-output-monitor](https://github.com/maralorn/nix-output-monitor)
+-   Visualization of the upgrade diff with [nvd](https://gitlab.com/khumba/nvd)
+-   Asking for confirmation before performing activation
 
 <p align="center">
   <img
@@ -34,10 +35,10 @@ As the main features:
   >
 </p>
 
-
 ## Installation
 
 ### NixDarwin Module
+
 This fork defines a nixDarwin module inspired by the nixosModule and the nixDarwin nix gc module
 
 This PR adds a nixDarwin module to nixDarwin itself https://github.com/LnL7/nix-darwin/pull/942
@@ -73,7 +74,7 @@ will then be able to choose between importing the module from this repo or just 
           # nh_darwin.packages.${pkgs.stdenv.hostPlatform.system}.default;
         ];
 
-      # Alias for nh-darwin
+      # Alias for nh_darwin
       environment.shellAliases.nh = "nh_darwin";
 
       programs.nh = {
@@ -125,6 +126,7 @@ will then be able to choose between importing the module from this repo or just 
 </details>
 
 ### NixOS module
+
 This fork has a nixos module that simply sets programs.nh.package to this fork
 
 The NixOS module has some niceties, like an alternative to `nix.gc.automatic` which also cleans XDG profiles, result and direnv GC roots.
@@ -164,7 +166,6 @@ To do so, you need to give nh some information of the spec that is currently run
   };
 }
 ```
-
 
 ## Hacking
 
