@@ -1,8 +1,10 @@
 # Notice: this file will only exist until this pr is merged https://github.com/nix-community/home-manager/pull/5304
 self: { config, lib, pkgs, ... }:
 
-let cfg = config.programs.nh;
-in {
+let
+  cfg = config.programs.nh;
+in
+{
   meta.maintainers = with lib.maintainers; [ johnrtitor ];
 
   options.programs.nh = {

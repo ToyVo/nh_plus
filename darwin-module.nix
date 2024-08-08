@@ -76,6 +76,8 @@ in
       }
     ];
 
+    nixpkgs.overlays = [ self.overlays.default ];
+
     environment = lib.mkIf cfg.enable {
       systemPackages = [ cfg.package ];
       variables = lib.mkIf (cfg.flake != null) {

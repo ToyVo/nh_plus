@@ -269,7 +269,7 @@ fn profiles_in_dir<P: AsRef<Path> + fmt::Debug>(dir: P) -> Vec<PathBuf> {
             }
         }
         Err(error) => {
-            warn!(?dir, ?error, "Failed to read profiles directory");
+            debug!(?dir, ?error, "Failed to read profiles directory");
         }
     }
 

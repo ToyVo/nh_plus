@@ -12,11 +12,11 @@ maintain support https://github.com/viperML/nh/issues/67 & https://github.com/vi
 
 ## What has been added?
 
-- `nh os switch` works on nix-darwin
-- nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
-- Use this fork of nh in nixDarwinModules.default and nixosModules.default
-- When $FLAKE isn't defined, default to `/etc/nixos`
-- `nh os switch --update` works when the flake is at `/etc/nixos` or in a root owned directory
+-   `nh os switch` works on nix-darwin
+-   nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
+-   Use this fork of nh in nixDarwinModules.default and nixosModules.default
+-   When $FLAKE isn't defined, default to `/etc/nixos`
+-   `nh os switch --update` works when the flake is at `/etc/nixos` or in a root owned directory
 
 ## What does it do?
 
@@ -25,9 +25,9 @@ home-manager cli or nix itself.
 
 As the main features:
 
-- Tree of builds with [nix-output-monitor](https://github.com/maralorn/nix-output-monitor)
-- Visualization of the upgrade diff with [nvd](https://gitlab.com/khumba/nvd)
-- Asking for confirmation before performing activation
+-   Tree of builds with [nix-output-monitor](https://github.com/maralorn/nix-output-monitor)
+-   Visualization of the upgrade diff with [nvd](https://gitlab.com/khumba/nvd)
+-   Asking for confirmation before performing activation
 
 <p align="center">
   <img

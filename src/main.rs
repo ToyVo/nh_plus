@@ -24,6 +24,10 @@ fn main() -> Result<()> {
     crate::logging::setup_logging(args.verbose)?;
     tracing::debug!(?args);
     tracing::debug!(%NH_VERSION);
+    if args.verbose {
+        let path = std::env::var("PATH").unwrap_or_default();
+        tracing::debug!(?path);
+    }
 
     args.command.run()
 }
