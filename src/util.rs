@@ -149,3 +149,24 @@ pub fn get_elevation_program() -> Result<(OsString, Vec<OsString>)> {
 
     Err(eyre::eyre!("No elevation strategy found"))
 }
+
+#[cfg(not(target_os = "macos"))]
+pub fn hostname() -> eyre::Result<OsString> {
+    hostname::get().context("Failed to get hostname")
+}
+
+#[cfg(target_os = "macos")]
+pub fn hostname() -> eyre::Result<OsString> {
+    use system_configuration::{
+        core_foundation::{base::TCFType, string::CFString},
+        sys::dynamic_store_copy_specific::SCDynamicStoreCopyLocalHostName,
+    };
+
+    let ptr = unsafe { SCDynamicStoreCopyLocalHostName(std::ptr::null()) };
+    if ptr.is_null() {
+        return Err(eyre::eyre!("Failed to get hostname"));
+    }
+    let name = unsafe { CFString::wrap_under_get_rule(ptr) };
+
+    Ok(name.to_string().into())
+}

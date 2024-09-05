@@ -42,7 +42,7 @@ impl OsRebuildArgs {
 
         let hostname = match &self.hostname {
             Some(h) => h.to_owned(),
-            None => hostname::get().context("Failed to get hostname")?,
+            None => util::hostname()?,
         };
 
         let out_path: Box<dyn crate::util::MaybeTempPath> = match self.common.out_link {
