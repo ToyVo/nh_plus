@@ -53,3 +53,6 @@ tracing-subscriber = { version = "0.3.18", features = [
 ] }
 uzers = { version = "0.12.0", default-features = false }
 which = "6.0.1"
+
+[target.'cfg(target_os="macos")'.dependencies]
+system-configuration = "0.6.1"
