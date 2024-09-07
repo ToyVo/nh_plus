@@ -4,14 +4,7 @@ self: { config, lib, pkgs, ... }:
 let
   cfg = config.programs.nh;
   nh_darwin = self.packages.${pkgs.stdenv.hostPlatform.system}.nh_darwin;
-  nh = (pkgs.runCommand "${nh_darwin.pname}-docker-compat-${nh_darwin.version}"
-    {
-      outputs = [ "out" ];
-      inherit (nh_darwin) meta;
-    } ''
-    mkdir -p $out/bin
-    ln -s ${nh_darwin}/bin/nh_darwin $out/bin/nh
-  '');
+  nh = pkgs.callPackage ./alias.nix { nh_darwin = cfg.package; };
 in
 {
   meta.maintainers = with lib.maintainers; [ johnrtitor ];
