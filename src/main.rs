@@ -8,6 +8,7 @@ mod logging;
 mod nixos;
 mod search;
 mod util;
+mod config;
 
 use crate::interface::NHParser;
 use crate::interface::NHRunnable;

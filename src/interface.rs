@@ -2,26 +2,41 @@ use ambassador::{delegatable_trait, Delegate};
 use anstyle::Style;
 use clap::{builder::Styles, Args, Parser, Subcommand};
 use color_eyre::Result;
-use std::{ffi::OsString, ops::Deref, path::Path, path::PathBuf};
+use std::{
+    ffi::OsString,
+    fmt::Display,
+    ops::Deref,
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
+
+pub static FLAKE_CONFIG: LazyLock<crate::config::Config> =
+    LazyLock::new(|| crate::config::Config::from_env().expect("unable to get home directory"));
 
 #[derive(Debug, Clone, Default)]
 pub struct FlakeRef(String);
 impl From<&str> for FlakeRef {
     fn from(s: &str) -> Self {
-        FlakeRef(s.to_string())
+        Self(s.to_owned())
     }
 }
 
+impl AsRef<str> for FlakeRef {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
 impl AsRef<Path> for FlakeRef {
     fn as_ref(&self) -> &Path {
         self.0.as_ref()
     }
 }
-// impl std::fmt::Display for FlakeRef {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.0)
-//     }
-// }
+
+impl Display for FlakeRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl Deref for FlakeRef {
     type Target = String;
@@ -108,12 +123,7 @@ pub struct OsRebuildArgs {
     pub common: CommonRebuildArgs,
 
     /// Flake reference to build
-    #[cfg(target_os = "linux")]
-    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "/etc/nixos")]
-    pub flakeref: FlakeRef,
-    /// Flake reference to build
-    #[cfg(target_os = "macos")]
-    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "~/.nixpkgs")]
+    #[arg(value_hint = clap::ValueHint::DirPath, default_value_t = FlakeRef(FLAKE_CONFIG.os_flake.to_string_lossy().into_owned()))]
     pub flakeref: FlakeRef,
 
     /// Output to choose from the flakeref. Hostname is used by default
@@ -172,7 +182,7 @@ pub struct CommonRebuildArgs {
 
     /// Path to save the result link. Defaults to using a temporary directory.
     #[arg(long, short)]
-    pub out_link: Option<PathBuf>
+    pub out_link: Option<PathBuf>,
 }
 
 #[derive(Args, Debug)]
@@ -285,7 +295,7 @@ pub struct HomeRebuildArgs {
     pub common: CommonRebuildArgs,
 
     /// Flake reference to build
-    #[arg(env = "FLAKE", value_hint = clap::ValueHint::DirPath, default_value = "~/.config/home-manager")]
+    #[arg(value_hint = clap::ValueHint::DirPath, default_value_t = FlakeRef(FLAKE_CONFIG.home_flake.to_string_lossy().into_owned()))]
     pub flakeref: FlakeRef,
 
     /// Name of the flake homeConfigurations attribute, like username@hostname
