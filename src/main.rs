@@ -9,6 +9,7 @@ mod nixos;
 mod repl;
 mod search;
 mod util;
+mod config;
 
 use crate::interface::NHParser;
 use crate::interface::NHRunnable;

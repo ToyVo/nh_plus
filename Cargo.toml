@@ -24,6 +24,7 @@ color-eyre = { version = "0.6.2", default-features = false, features = [
 derive_builder = "0.20.0"
 dialoguer = { version = "0.11.0", default-features = false }
 elasticsearch-dsl = "0.4.19"
+etcetera = "0.8.0"
 hostname = "0.4"
 humantime = "2.1.0"
 nix = { version = "0.29.0", default-features = false, features = [

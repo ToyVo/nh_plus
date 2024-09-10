@@ -1,5 +1,11 @@
 # Notice: this file will only exist until this pr is merged https://github.com/LnL7/nix-darwin/pull/942
-self: { config, lib, pkgs, ... }:
+self:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.programs.nh;
 in
@@ -13,16 +19,26 @@ in
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
     };
 
-    flake = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = ''
-        The path that will be used for the `FLAKE` environment variable.
+    flake = {
+      os = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        description = ''
+          The path that will be used for the `NH_OS_FLAKE` environment variable.
 
-        `FLAKE` is used by nh as the default flake for performing actions, like `nh os switch`.
-      '';
+          `NH_OS_FLAKE` is used by nh as the default flake for performing actions on NixOS/nix-darwin, like `nh os switch`.
+        '';
+      };
+      home = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        description = ''
+          The path that will be used for the `NH_HOME_FLAKE` environment variable.
+
+          `NH_HOME_FLAKE` is used by nh as the default flake for performing actions on home-manager, like `nh home switch`.
+        '';
+      };
     };
-
     clean = {
       enable = lib.mkEnableOption "periodic garbage collection with nh clean all";
 
@@ -35,7 +51,9 @@ in
 
       interval = lib.mkOption {
         type = lib.types.attrs;
-        default = { Weekday = 0; };
+        default = {
+          Weekday = 0;
+        };
         description = ''
           How often cleanup is performed. Passed to launchd.StartCalendarInterval
 
@@ -59,9 +77,12 @@ in
 
   config = {
     warnings =
-      if (!(cfg.clean.enable -> !config.nix.gc.automatic)) then [
-        "programs.nh.clean.enable and nix.gc.automatic are both enabled. Please use one or the other to avoid conflict."
-      ] else [ ];
+      if (!(cfg.clean.enable -> !config.nix.gc.automatic)) then
+        [
+          "programs.nh.clean.enable and nix.gc.automatic are both enabled. Please use one or the other to avoid conflict."
+        ]
+      else
+        [ ];
 
     assertions = [
       # Not strictly required but probably a good assertion to have
@@ -71,8 +92,12 @@ in
       }
 
       {
-        assertion = (cfg.flake != null) -> !(lib.hasSuffix ".nix" cfg.flake);
-        message = "nh.flake must be a directory, not a nix file";
+        assertion = (cfg.flake.os != null) -> !(lib.hasSuffix ".nix" cfg.flake.os);
+        message = "nh.flake.os must be a directory, not a nix file";
+      }
+      {
+        assertion = (cfg.flake.home != null) -> !(lib.hasSuffix ".nix" cfg.flake.home);
+        message = "nh.flake.home must be a directory, not a nix file";
       }
     ];
 
@@ -80,9 +105,10 @@ in
 
     environment = lib.mkIf cfg.enable {
       systemPackages = [ cfg.package ];
-      variables = lib.mkIf (cfg.flake != null) {
-        FLAKE = cfg.flake;
-      };
+      variables = lib.mkMerge [
+        (lib.mkIf (cfg.flake.os != null) { NH_OS_FLAKE = cfg.flake.os; })
+        (lib.mkIf (cfg.flake.home != null) { NH_HOME_FLAKE = cfg.flake.home; })
+      ];
     };
 
     launchd = lib.mkIf cfg.clean.enable {
