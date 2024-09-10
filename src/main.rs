@@ -1,6 +1,7 @@
 mod clean;
 mod commands;
 mod completion;
+mod config;
 mod home;
 mod interface;
 mod json;
@@ -9,14 +10,13 @@ mod nixos;
 mod repl;
 mod search;
 mod util;
-mod config;
 
 use crate::interface::NHParser;
 use crate::interface::NHRunnable;
 use crate::util::get_elevation_program;
 use color_eyre::Result;
-use tracing::debug;
 use std::ffi::OsString;
+use tracing::debug;
 
 const NH_VERSION: &str = env!("CARGO_PKG_VERSION");
 

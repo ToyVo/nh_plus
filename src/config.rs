@@ -1,7 +1,4 @@
-use std::{
-    env::var_os,
-    path::PathBuf,
-};
+use std::{env::var_os, path::PathBuf};
 
 use etcetera::{app_strategy::Xdg, AppStrategy, AppStrategyArgs, HomeDirError};
 

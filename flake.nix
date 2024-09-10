@@ -12,11 +12,13 @@
   };
 
   outputs =
-    inputs @ { self
-    , nixpkgs
-    , flake-parts
-    , devshell
-    }: flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      devshell,
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -30,17 +32,22 @@
         ./devshell.nix
       ];
 
-      perSystem = { pkgs, config, ... }: {
-        overlayAttrs = {
-          inherit (config.packages) nh;
-        };
-        packages = rec {
-          nh = pkgs.callPackage ./package.nix {
-            rev = self.shortRev or self.dirtyShortRev or "dirty";
+      perSystem =
+        { pkgs, config, ... }:
+        {
+          overlayAttrs = {
+            inherit (config.packages) nh;
           };
-          default = nh;
+
+          formatter = pkgs.nixfmt-rfc-style;
+
+          packages = rec {
+            nh = pkgs.callPackage ./package.nix {
+              rev = self.shortRev or self.dirtyShortRev or "dirty";
+            };
+            default = nh;
+          };
         };
-      };
 
       flake = {
         nixosModules.default = import ./module.nix self;

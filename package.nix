@@ -1,16 +1,17 @@
-{ stdenv
-, lib
-, rustPlatform
-, installShellFiles
-, makeBinaryWrapper
-, darwin
-, nvd
-, use-nom ? true
-, nix-output-monitor ? null
-, rev ? "dirty"
-,
+{
+  stdenv,
+  lib,
+  rustPlatform,
+  installShellFiles,
+  makeBinaryWrapper,
+  darwin,
+  nvd,
+  use-nom ? true,
+  nix-output-monitor ? null,
+  rev ? "dirty",
 }:
-assert use-nom -> nix-output-monitor != null; let
+assert use-nom -> nix-output-monitor != null;
+let
   runtimeDeps = [ nvd ] ++ lib.optionals use-nom [ nix-output-monitor ];
   cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 in
@@ -20,14 +21,13 @@ rustPlatform.buildRustPackage {
 
   src = lib.fileset.toSource {
     root = ./.;
-    fileset =
-      lib.fileset.intersection
-        (lib.fileset.fromSource (lib.sources.cleanSource ./.))
-        (lib.fileset.unions [
-          ./src
-          ./Cargo.toml
-          ./Cargo.lock
-        ]);
+    fileset = lib.fileset.intersection (lib.fileset.fromSource (lib.sources.cleanSource ./.)) (
+      lib.fileset.unions [
+        ./src
+        ./Cargo.toml
+        ./Cargo.lock
+      ]
+    );
   };
 
   strictDeps = true;
@@ -60,6 +60,8 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/ToyVo/nh_plus";
     license = lib.licenses.eupl12;
     mainProgram = "nh";
-    maintainers = with lib.maintainers; [ ToyVo ];
+    maintainers = with lib.maintainers; [
+      ToyVo
+    ];
   };
 }

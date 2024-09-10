@@ -1,7 +1,7 @@
 extern crate semver;
 
-use color_eyre::{eyre, Result};
 use color_eyre::eyre::Context;
+use color_eyre::{eyre, Result};
 use semver::Version;
 use tempfile::TempDir;
 use tracing::debug;

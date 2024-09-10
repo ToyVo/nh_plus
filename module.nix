@@ -9,8 +9,8 @@ let
   cfg = config.programs.nh;
 in
 {
-  options.programs.nh.flake = {
-    os = lib.mkOption {
+  options.programs.nh = {
+    os.flake = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
       description = ''
@@ -19,7 +19,7 @@ in
         `NH_OS_FLAKE` is used by nh as the default flake for performing actions on NixOS/nix-darwin, like `nh os switch`.
       '';
     };
-    home = lib.mkOption {
+    home.flake = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
       description = ''
@@ -33,8 +33,8 @@ in
     nixpkgs.overlays = [ self.overlays.default ];
     programs.nh.package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.default;
     environment.variables = lib.mkMerge [
-      (lib.mkIf (cfg.flake.os != null) { NH_OS_FLAKE = cfg.flake.os; })
-      (lib.mkIf (cfg.flake.home != null) { NH_HOME_FLAKE = cfg.flake.home; })
+      (lib.mkIf (cfg.os.flake != null) { NH_OS_FLAKE = cfg.os.flake; })
+      (lib.mkIf (cfg.home.flake != null) { NH_HOME_FLAKE = cfg.home.flake; })
     ];
   };
 }
