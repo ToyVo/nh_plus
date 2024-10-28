@@ -1,39 +1,27 @@
-name: "Build NH"
+name: "Build and Cache"
 
 on:
   pull_request:
   push:
-    branches-ignore:
-      - 'update-*'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  main:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-latest
+          - [self-hosted, linux, ARM64]
+          - [self-hosted, macOS, ARM64]
+          - [self-hosted, macOS, x64]
     steps:
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-
-      - name: Install Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - run: nix build github:$GITHUB_REPOSITORY/$GITHUB_SHA -L
-
-      # TODO: use the nixpkgs NixOS module or move test to nixpkgs
-      # TODO: use unshare instead of sudo to mount
-      # - name: NixOS check
-      #   env:
-      #     out: /nixos
-      #   run: |
-      #     sudo /bin/bash <<EOF
-      #     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-      #     mkdir -pv $out
-      #     mount -t tmpfs none $out
-      #     nix profile install nixpkgs#nixos-install-tools
-      #     nixos-install \
-      #       --flake github:$GITHUB_REPOSITORY/$GITHUB_SHA#check \
-      #       --root $out \
-      #       --no-root-passwd \
-      #       --no-bootloader
-      #     EOF
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+      - uses: cachix/cachix-action@v14
+        with:
+          name: toyvo
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - run: nix build --accept-flake-config

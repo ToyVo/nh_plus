@@ -119,6 +119,16 @@ will then be able to choose between importing the module from this repo or just 
     # Expose the package set, including overlays, for convenience.
     darwinPackages = self.darwinConfigurations."simple".pkgs;
   };
+
+  # Binary cache so you don't have to build yourself, builds for aarch64 and x86_64, linux and darwin.
+  nixConfig = {
+    extra-substituters = [
+      "https://toyvo.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "toyvo.cachix.org-1:s++CG1te6YaS9mjICre0Ybbya2o/S9fZIyDNGiD4UXs="
+    ];
+  };
 }
 ```
 
