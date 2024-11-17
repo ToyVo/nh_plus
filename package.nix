@@ -16,7 +16,7 @@ let
   cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
 in
 rustPlatform.buildRustPackage {
-  pname = "nh";
+  pname = "nh_plus";
   version = "${cargoToml.package.version}-${rev}";
 
   src = lib.fileset.toSource {
