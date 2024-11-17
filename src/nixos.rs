@@ -55,10 +55,14 @@ impl OsSubcommandArgs {
 
         debug!(?out_path);
 
+        #[cfg(target_os = "linux")]
+        let configuration_module = "nixosConfigurations";
+        #[cfg(target_os = "macos")]
+        let configuration_module = "darwinConfigurations";
+
         let flake_output = format!(
-            "{}#nixosConfigurations.\"{:?}\".config.system.build.toplevel",
-            &self.common.flakeref.deref(),
-            hostname
+            "{}#{configuration_module}.\"{hostname:?}\".config.system.build.toplevel",
+            &self.common.flakeref.deref()
         );
 
         if self.common.update {
@@ -89,9 +93,14 @@ impl OsSubcommandArgs {
                 .exec()?;
         }
 
+        #[cfg(target_os = "linux")]
+        let message = "Building NixOS configuration";
+        #[cfg(target_os = "macos")]
+        let message = "Building Darwin configuration";
+
         commands::BuildCommandBuilder::default()
             .flakeref(flake_output)
-            .message("Building NixOS configuration")
+            .message(message)
             .extra_args(["--out-link"])
             .extra_args([out_path.get_path()])
             .extra_args(&self.extra_args)
@@ -136,6 +145,7 @@ impl OsSubcommandArgs {
             }
         }
 
+        #[cfg(target_os = "linux")]
         if let Test(_) | Switch(_) = rebuild_type {
             // !! Use the target profile aka spec-namespaced
             let switch_to_configuration =
@@ -159,18 +169,43 @@ impl OsSubcommandArgs {
                 .exec()?;
 
             // !! Use the base profile aka no spec-namespace
-            let switch_to_configuration = out_path
-                .get_path()
-                .join("bin")
-                .join("switch-to-configuration");
-            let switch_to_configuration = switch_to_configuration.to_str().unwrap();
+            #[cfg(target_os = "linux")]
+            {
+                let switch_to_configuration = out_path
+                    .get_path()
+                    .join("bin")
+                    .join("switch-to-configuration");
+                let switch_to_configuration = switch_to_configuration.to_str().unwrap();
 
-            commands::CommandBuilder::default()
-                .root(true)
-                .args([switch_to_configuration, "boot"])
-                .message("Adding configuration to bootloader")
-                .build()?
-                .exec()?;
+                commands::CommandBuilder::default()
+                    .root(true)
+                    .args([switch_to_configuration, "boot"])
+                    .message("Adding configuration to bootloader")
+                    .build()?
+                    .exec()?;
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                let activate_user = out_path.get_path().join("activate-user");
+                let activate_user = activate_user.to_str().unwrap();
+
+                commands::CommandBuilder::default()
+                    .args([activate_user])
+                    .message("Activating configuration for user")
+                    .build()?
+                    .exec()?;
+
+                let activate = out_path.get_path().join("activate");
+                let activate = activate.to_str().unwrap();
+
+                commands::CommandBuilder::default()
+                    .root(root)
+                    .args([activate])
+                    .message("Activating configuration")
+                    .build()?
+                    .exec()?;
+            }
         }
 
         // Make sure out_path is not accidentally dropped

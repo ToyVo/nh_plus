@@ -1,8 +1,18 @@
-[![dependency status](https://deps.rs/repo/github/viperML/nh/status.svg)](https://deps.rs/repo/github/viperML/nh)
+[![dependency status](https://deps.rs/repo/github/ToyVo/nh/status.svg)](https://deps.rs/repo/github/ToyVo/nh)
 
-<h1 align="center">nh</h1>
+<h1 align="center">nh - fork</h1>
 
 <h6 align="center">Because the name "yet-another-<u>n</u>ix-<u>h</u>elper" was too long to type...</h1>
+
+## Why fork?
+
+The original owner is unwilling to pull in changes to support darwin because they don't have a mac to be able to maintain support https://github.com/viperML/nh/issues/67 & https://github.com/viperML/nh/pull/97
+
+## What has been added?
+
+- `nh os switch` works on nix-darwin
+- nixDarwinModules.default is similar to the nixosModule for nix.gc and programs.nh.clean
+- Use this fork of nh in nixDarwinModules.default and nixosModules.default
 
 ## What does it do?
 
