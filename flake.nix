@@ -1,10 +1,18 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nix-darwin = {
+        url = "github:LnL7/nix-darwin";
+        inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+      nix-darwin,
+    }:
     let
       forAllSystems =
         function:
@@ -31,5 +39,14 @@
       });
 
       formatter = forAllSystems (pkgs: pkgs.nixfmt-rfc-style);
+
+      darwinConfigurations.nh_test = nix-darwin.lib.darwinSystem {
+        modules = [
+          {
+            nixpkgs.hostPlatform = "aarch64-darwin";
+            system.stateVersion = 5;
+          }
+        ];
+      };
     };
 }

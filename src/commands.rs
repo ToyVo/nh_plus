@@ -63,7 +63,27 @@ impl Command {
 
     pub fn run(&self) -> Result<()> {
         let cmd = if self.elevate {
-            Exec::cmd("sudo").arg(&self.command).args(&self.args)
+            #[cfg(not(target_os = "macos"))]
+            let cmd = Exec::cmd("sudo");
+
+            // Check for if sudo has the preserve-env flag
+            #[cfg(target_os = "macos")]
+            let cmd = Exec::cmd("sudo").args(
+                if Exec::cmd("sudo")
+                    .args(&["--help"])
+                    .stderr(Redirection::None)
+                    .stdout(Redirection::Pipe)
+                    .capture()?
+                    .stdout_str()
+                    .contains("--preserve-env")
+                {
+                    &["--set-home", "--preserve-env=PATH", "env"]
+                } else {
+                    &["--set-home"]
+                },
+            );
+
+            cmd.arg(&self.command).args(&self.args)
         } else {
             Exec::cmd(&self.command).args(&self.args)
         }

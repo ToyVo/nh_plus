@@ -59,7 +59,7 @@ impl interface::CleanMode {
 
                 // Most unix systems start regular users at uid 1000+, but macos is special at 501+
                 // https://en.wikipedia.org/wiki/User_identifier
-                #[cfg(target_os = "linux")]
+                #[cfg(not(target_os = "macos"))]
                 let uid_min = 1000;
                 #[cfg(target_os = "macos")]
                 let uid_min = 501;
