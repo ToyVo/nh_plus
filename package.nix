@@ -61,7 +61,7 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Yet another nix cli helper";
-    homepage = "https://github.com/viperML/nh";
+    homepage = "https://github.com/toyvo/nh_plus";
     license = lib.licenses.eupl12;
     mainProgram = "nh";
     maintainers = with lib.maintainers; [

@@ -1,4 +1,4 @@
-<h1 align="center">nh</h1>
+<h1 align="center">nh_plus</h1>
 
 <h6 align="center">Because the name "yet-another-<u>n</u>ix-<u>h</u>elper" was too long to type...</h1>
 
@@ -38,7 +38,7 @@ latest development version of nh.
 
 ```
 nix shell nixpkgs#nh # stable
-nix shell github:viperML/nh # dev
+nix shell github:toyvo/nh_plus # dev
 ```
 
 
@@ -91,7 +91,7 @@ To do so, you need to give nh some information of the spec that is currently run
 
 # Status
 
-[![Dependency status](https://deps.rs/repo/github/viperML/nh/status.svg)](https://deps.rs/repo/github/viperML/nh)
+[![Dependency status](https://deps.rs/repo/github/toyvo/nh_plus/status.svg)](https://deps.rs/repo/github/toyvo/nh_plus)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/nh.svg)](https://repology.org/project/unit/versions)
 
