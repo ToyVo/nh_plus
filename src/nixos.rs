@@ -7,7 +7,7 @@ use crate::commands::Command;
 use crate::installable::Installable;
 use crate::interface::OsSubcommand::{self};
 use crate::interface::{self, OsRebuildArgs, OsReplArgs};
-use crate::update::update;
+use crate::update::{check_for_conflicts, pull, update};
 
 const SYSTEM_PROFILE: &str = "/nix/var/nix/profiles/system";
 const CURRENT_PROFILE: &str = "/run/current-system";
@@ -48,6 +48,14 @@ impl OsRebuildArgs {
             }
             true
         };
+
+        if self.update_args.pull {
+            pull(&self.common.installable)?;
+        }
+
+        if self.update_args.pull || self.update_args.update {
+            check_for_conflicts(&self.common.installable)?;
+        }
 
         if self.update_args.update {
             update(&self.common.installable, self.update_args.update_input)?;

@@ -9,7 +9,7 @@ use crate::commands;
 use crate::commands::Command;
 use crate::installable::Installable;
 use crate::interface::{self, HomeRebuildArgs, HomeReplArgs, HomeSubcommand};
-use crate::update::update;
+use crate::update::{check_for_conflicts, pull, update};
 
 impl interface::HomeArgs {
     pub fn run(self) -> Result<()> {
@@ -31,6 +31,14 @@ enum HomeRebuildVariant {
 impl HomeRebuildArgs {
     fn rebuild(self, variant: HomeRebuildVariant) -> Result<()> {
         use HomeRebuildVariant::*;
+
+        if self.update_args.pull {
+            pull(&self.common.installable)?;
+        }
+
+        if self.update_args.pull || self.update_args.update {
+            check_for_conflicts(&self.common.installable)?;
+        }
 
         if self.update_args.update {
             update(&self.common.installable, self.update_args.update_input)?;

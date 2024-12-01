@@ -6,7 +6,7 @@ use crate::commands::Command;
 use crate::installable::Installable;
 use crate::interface::{DarwinArgs, DarwinRebuildArgs, DarwinReplArgs, DarwinSubcommand};
 use crate::nixos::toplevel_for;
-use crate::update::update;
+use crate::update::{check_for_conflicts, pull, update};
 use crate::Result;
 
 const SYSTEM_PROFILE: &str = "/nix/var/nix/profiles/system";
@@ -65,6 +65,14 @@ impl DarwinRebuildArgs {
 
         if nix::unistd::Uid::effective().is_root() {
             bail!("Don't run nh os as root. I will call sudo internally as needed");
+        }
+
+        if self.update_args.pull {
+            pull(&self.common.installable)?;
+        }
+
+        if self.update_args.pull || self.update_args.update {
+            check_for_conflicts(&self.common.installable)?;
         }
 
         if self.update_args.update {

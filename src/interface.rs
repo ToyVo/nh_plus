@@ -354,4 +354,8 @@ pub struct UpdateArgs {
     #[arg(short = 'U', long = "update-input")]
     /// Update a single flake input
     pub update_input: Option<String>,
+
+    /// Run git pull on the flake before building specified configuration
+    #[arg(long, short = 'p')]
+    pub pull: bool,
 }
