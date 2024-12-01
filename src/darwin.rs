@@ -88,7 +88,7 @@ impl DarwinRebuildArgs {
             ref mut attribute, ..
         } = installable
         {
-            // If user explicitely selects some other attribute, don't push darwinConfigurations
+            // If user explicitly selects some other attribute, don't push darwinConfigurations
             if attribute.is_empty() {
                 attribute.push(String::from("darwinConfigurations"));
                 attribute.push(hostname.clone());
@@ -133,20 +133,23 @@ impl DarwinRebuildArgs {
             Command::new("nix")
                 .args(["build", "--profile", SYSTEM_PROFILE])
                 .arg(out_path.get_path())
-                .elevate(true)
+                .elevate(!self.common.dry)
+                .dry(self.common.dry)
                 .run()?;
 
             let switch_to_configuration = out_path.get_path().join("activate-user");
 
             Command::new(switch_to_configuration)
                 .message("Activating configuration for user")
+                .dry(self.common.dry)
                 .run()?;
 
             let switch_to_configuration = out_path.get_path().join("activate");
 
             Command::new(switch_to_configuration)
-                .elevate(true)
+                .elevate(!self.common.dry)
                 .message("Activating configuration")
+                .dry(self.common.dry)
                 .run()?;
         }
 
