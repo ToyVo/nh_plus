@@ -31,5 +31,14 @@
       });
 
       formatter = forAllSystems (pkgs: pkgs.nixfmt-rfc-style);
+      nixosModules.default = import ./module.nix self;
+      # use this module before this pr is merged https://github.com/LnL7/nix-darwin/pull/942
+      nixDarwinModules.prebuiltin = import ./darwin-module.nix self;
+      # use this module after that pr is merged
+      nixDarwinModules.default = import ./module.nix self;
+      # use this module before this pr is merged https://github.com/nix-community/home-manager/pull/5304
+      homeManagerModules.prebuiltin = import ./home-manager-module.nix self;
+      # use this module after that pr is merged
+      homeManagerModules.default = import ./module.nix self;
     };
 }

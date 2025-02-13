@@ -6,7 +6,7 @@ use crate::commands::Command;
 use crate::installable::Installable;
 use crate::interface::{DarwinArgs, DarwinRebuildArgs, DarwinReplArgs, DarwinSubcommand};
 use crate::nixos::toplevel_for;
-use crate::update::update;
+use crate::update::{pull, update};
 use crate::Result;
 
 const SYSTEM_PROFILE: &str = "/nix/var/nix/profiles/system";
@@ -72,6 +72,14 @@ impl DarwinRebuildArgs {
             bail!("Don't run nh os as root. I will call sudo internally as needed");
         }
 
+        if self.common.pull {
+            pull(
+                &self.common.installable,
+                self.update_args.update,
+                self.common.dry,
+            )?;
+        }
+
         if self.update_args.update {
             update(&self.common.installable, self.update_args.update_input)?;
         }
@@ -101,6 +109,16 @@ impl DarwinRebuildArgs {
         }
 
         let toplevel = toplevel_for(hostname, installable);
+
+        if self.common.pull {
+            if let Installable::Flake { reference, .. } = &self.common.installable {
+                commands::Command::new("git")
+                    .args(["-C", reference, "pull"])
+                    .dry(self.common.dry)
+                    .message("Pulling Flake")
+                    .run()?;
+            }
+        }
 
         commands::Build::new(toplevel)
             .extra_arg("--out-link")
