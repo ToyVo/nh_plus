@@ -91,7 +91,7 @@ in
     launchd = lib.mkIf cfg.clean.enable {
       daemons.nh-clean = {
         command = "exec ${lib.getExe cfg.package} clean all ${cfg.clean.extraArgs}";
-        environment.NIX_REMOTE = lib.optionalString config.nix.useDaemon "daemon";
+        environment.NIX_REMOTE = "daemon";
         serviceConfig.RunAtLoad = false;
         serviceConfig.StartCalendarInterval = [ cfg.clean.interval ];
         serviceConfig.UserName = cfg.clean.user;
